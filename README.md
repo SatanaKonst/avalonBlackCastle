@@ -4,7 +4,7 @@
 # Для сборки
 ```node version = v20.1.0``` <br>
 ```Android Studio``` <br>
-```Graddle 7```<br>
+```Graddle 7 (brew install gradle@7)```<br>
 ```Java 17 (add to gradle.properties "org.gradle.java.home=/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home")```
 ```Android build tools 32.0.0 https://stackoverflow.com/questions/70145085/no-installed-build-tools-found-install-the-android-build-tools-version-30-0```
 
