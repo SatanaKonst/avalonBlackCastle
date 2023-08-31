@@ -11,14 +11,27 @@
           <div class="col-12 mb-5" v-if="selectedNode!==null">
             <h2>Настройки локации</h2>
 
-            <input type="text" class="form-control mb-1" v-model="selectedNode.data.name">
-            <select class="form-control mb-2" multiple @change="addLink">
-              <option v-for="link in linksNodes"
-                      :value="link.id"
-                      v-if="link.id!==selectedNode.id"
-                      :key="link.id">{{ link.name }}</option>
-            </select>
+            <div class="row">
+              <div class="col-12">
+                <input type="text" class="form-control mb-1" v-model="selectedNode.data.name">
+              </div>
+              <div class="col-12">
+                <textarea class="w-100 bg-white text-body" v-model="selectedNode.data.description"></textarea>
+              </div>
+            </div>
 
+            <div class="row">
+              <div class="col-12">
+                <h3>Связь</h3>
+                <select class="form-control mb-2" multiple @change="addLink">
+                  <option v-for="link in linksNodes"
+                          :value="link.id"
+                          v-if="link.id!==selectedNode.id"
+                          :key="link.id">{{ link.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
             <button class="btn btn-success" type="button" @click="updateNode">
               <i class="fa-solid fa-save"> Сохранить</i>
             </button>
@@ -35,6 +48,12 @@
               </li>
             </ul>
           </div>
+
+          <div class="col-12" v-if="nodes.length>0">
+            <button class="btn btn-success" type="button" @click="save">
+              <i class="fa-solid fa-save">Сохранить граф</i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -45,7 +64,7 @@
 
 export default {
   name: 'Editor',
-  data () {
+  data() {
     return {
       graph: null,
       view: null,
@@ -60,7 +79,7 @@ export default {
       selectedNode: null
     }
   },
-  created () {
+  created() {
     /* eslint-disable */
     let link = document.createElement("link");
     link.href = "/static/fontawesome-6.4.0/css/all.css";
@@ -74,7 +93,7 @@ export default {
 
     /* eslint-enable */
   },
-  mounted () {
+  mounted() {
     /* eslint-disable */
     let graphics = this.view.svgGraphics()
     graphics.node(function (node) {
@@ -103,31 +122,40 @@ export default {
     /* eslint-enable */
   },
   computed: {
-    linksNodes () {
+    linksNodes() {
       let result = []
       this.nodes.map((node) => {
         result.push({
           id: node.id,
-          name: node.data.name
+          name: node.data.name,
+          description: '',
+          resource: {
+            images: [],
+            audio: [],
+            video: []
+          }
         })
       })
       return result
     }
   },
   methods: {
-    addNode () {
+    addNode() {
       this.nodeTemplate.id++
       let tmp = JSON.parse(JSON.stringify(this.nodeTemplate))
       let newNode = this.graph.addNode(tmp.id, tmp.data)
       this.nodes.push(newNode)
     },
-    addLink (event) {
+    addLink(event) {
       if (this.selectedNode.id !== event.target.value) {
         this.graph.addLink(this.selectedNode.id, event.target.value)
       }
     },
-    updateNode () {
+    updateNode() {
       this.graph.addNode(this.selectedNode.id, this.selectedNode.data)
+    },
+    save() {
+      localStorage.setItem('nodes', JSON.stringify(this.nodes))
     }
 
   }
