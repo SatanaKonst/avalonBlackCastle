@@ -76,11 +76,23 @@
               <div class="row">
                 <div class="col-12">
                   <h3>Связь локации</h3>
-                  <select class="form-control mb-2" multiple @change="addLink($event, null)">
-                    <option value="">Нет связи</option>
+                  <ul class="list-group mb-3">
+                    <li class="list-group-item" v-for="link in linksNodes.filter((item)=>{
+                      return hasSelectedLink(item.id)
+                    })" :key="link.id">
+                      {{ link.name }}
+
+                      <button class="btn btn-sm btn-danger float-end" @click="removeLink(link.id)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </li>
+                  </ul>
+
+                  <select class="form-select mb-2" @change="addLink($event, null)">
+                    <option value="">Выбрать</option>
                     <option v-for="link in linksNodes"
                             :value="link.id"
-                            v-bind:selected="hasSelectedLink(link.id)"
+                            v-if="hasSelectedLink(link.id)===false && link.id !== selectedNode.id"
                             :key="link.id">{{ link.name }}
                     </option>
                   </select>
@@ -380,7 +392,7 @@ export default {
         let selectedLinksIds = this.selectedNode.links.map((selectedLink) => {
           return Number(selectedLink.toId)
         })
-        return selectedLinksIds.indexOf(linkId) !== -1
+        return selectedLinksIds.indexOf(linkId) !== -1 && linkId !== this.selectedNode.id
       }
       return false
     },
@@ -413,17 +425,22 @@ export default {
      * @param event
      */
     addLink (event) {
-      if (event.target.value === '') {
-        let links = this.graph.getLinks(this.selectedNode.id)
-        links.forEach((link) => {
-          this.graph.removeLink(link)
-        })
-        this.selectedNode.links = []
-      } else if (
+      if (
         this.selectedNode.id !== event.target.value &&
         this.graph.getLink(this.selectedNode.id, event.target.value) === null
       ) {
         this.graph.addLink(this.selectedNode.id, event.target.value)
+      }
+    },
+    removeLink (linkId) {
+      for (let selectedLinkIndex in this.selectedNode.links) {
+        let selectedLink = this.selectedNode.links[selectedLinkIndex]
+        console.log(selectedLinkIndex)
+        if (Number(selectedLink.toId) === linkId) {
+          this.selectedNode.links.splice(selectedLinkIndex, 1)
+          this.graph.removeLink(selectedLink)
+          break
+        }
       }
     },
     /**
