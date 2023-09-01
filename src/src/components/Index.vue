@@ -1,16 +1,17 @@
 <template>
   <div class="hello">
     <h1>{{msg}}</h1>
-    <router-link to="/editor">Editor</router-link>
+    <router-link class="btn btn-success" to="/game">Game</router-link>
+    <router-link class="btn btn-info" to="/editor">Editor</router-link>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'index',
   data () {
     return {
-      msg: 'HELLO WORLD!!! sjkdhfkjshdkfjhskdj'
+      msg: 'Главная страница'
     }
   }
 }

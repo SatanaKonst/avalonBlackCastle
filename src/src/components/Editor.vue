@@ -34,7 +34,7 @@
           <div class="col-12 mt-3">
             <label v-if="nodes.length===0">
               Импорт
-              <input class="btn btn-info"
+              <input class="form-control"
                      type="file"
                      @change="importExportFile"
                      value="Импорт">
@@ -457,16 +457,18 @@ export default {
       this.graph.removeNode(this.nodes[nodeIndex].id)
       this.nodes.splice(nodeIndex, 1)
     },
-    /**
-     * Сохранить граф в локальную память
-     */
-    save () {
-      let saveObject = {
+    getSaveObject () {
+      return {
         objects: this.objects,
         monsters: this.monsters,
         nodes: this.nodes
       }
-      localStorage.setItem('nodes', JSON.stringify(saveObject))
+    },
+    /**
+     * Сохранить граф в локальную память
+     */
+    save () {
+      localStorage.setItem('nodes', JSON.stringify(this.getSaveObject()))
     },
     /**
      * Загрузить сохраненные данные
@@ -496,7 +498,7 @@ export default {
      */
     exportNodes () {
       const link = document.createElement('a')
-      const file = new Blob([JSON.stringify(this.nodes)], {type: 'text/plain'})
+      const file = new Blob([JSON.stringify(this.getSaveObject())], {type: 'text/plain'})
       link.href = URL.createObjectURL(file)
       link.download = 'graphNodes.txt'
       link.click()
