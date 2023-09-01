@@ -67,7 +67,7 @@
                 <input type="text" class="form-control mb-1" v-model="selectedNode.data.name">
               </div>
               <div class="col-12">
-                <textarea class="w-100 bg-white text-body"
+                <textarea class="form-control w-100 bg-white text-body"
                           v-model="selectedNode.data.description"
                           placeholder="Описание локации"></textarea>
               </div>
@@ -75,11 +75,12 @@
               <!--              Связи-->
               <div class="row">
                 <div class="col-12">
-                  <h3>Связь</h3>
+                  <h3>Связь локации</h3>
                   <select class="form-control mb-2" multiple @change="addLink($event, null)">
+                    <option value="">Нет связи</option>
                     <option v-for="link in linksNodes"
                             :value="link.id"
-                            v-if="link.id!==selectedNode.id"
+                            v-bind:selected="hasSelectedLink(link.id)"
                             :key="link.id">{{ link.name }}
                     </option>
                   </select>
@@ -118,6 +119,16 @@
                   </div>
                 </div>
               </div>
+
+              <div class="col-12 mb-4 border-bottom pb-2">
+                <h3>Монстры на локации</h3>
+                <select class="form-control" multiple v-model="selectedNode.data.monsters">
+                  <option value="">Нет монстров</option>
+                  <option v-for="monster in monsters" :key="monster.key" :value="monster.key">
+                    {{ monster.name }}
+                  </option>
+                </select>
+              </div>
             </div>
 
             <button class="btn btn-success" type="button" @click="updateNode()">
@@ -150,19 +161,27 @@
             <div :id="'collapseMonster'+monsterIndex" class="collapse">
               <div class="card-body">
                 <div class="row">
-                  <div class="col-4">
+                  <div class="col-3">
+                    <label>
+                      Ключ
+                      <input class="form-control" type="text"
+                             :value="monsters[monsterIndex].key = getStrHash(monsters[monsterIndex].name+monsters[monsterIndex].description+monsterIndex)"
+                             readonly>
+                    </label>
+                  </div>
+                  <div class="col-3">
                     <label>
                       Название
                       <input class="form-control" type="text" v-model="monsters[monsterIndex].name">
                     </label>
                   </div>
-                  <div class="col-4">
+                  <div class="col-3">
                     <label>
                       Уровень
                       <input class="form-control" type="number" v-model="monsters[monsterIndex].level">
                     </label>
                   </div>
-                  <div class="col-4">
+                  <div class="col-3">
                     <label>
                       Очков здоровья
                       <input class="form-control" type="number" v-model="monsters[monsterIndex].health">
@@ -256,7 +275,7 @@
 
 export default {
   name: 'Editor',
-  data() {
+  data () {
     return {
       graph: null,
       view: null,
@@ -273,10 +292,12 @@ export default {
             images: [],
             audio: [],
             video: []
-          }
+          },
+          monsters: []
         }
       },
       monsterTemplate: {
+        key: this.getStrHash('Название монстра'),
         name: 'Название монстра',
         level: 1,
         health: 100,
@@ -292,7 +313,7 @@ export default {
       selectedNode: null
     }
   },
-  created() {
+  created () {
     /* eslint-disable */
     let link = document.createElement("link");
     link.href = "/static/fontawesome-6.4.0/css/all.css";
@@ -306,7 +327,7 @@ export default {
 
     /* eslint-enable */
   },
-  mounted() {
+  mounted () {
     /* eslint-disable */
     let graphics = this.view.svgGraphics()
     graphics.node(function (node) {
@@ -332,28 +353,41 @@ export default {
 
     this.loadSaveNodes()
 
+    // setInterval(() => {
+    //   this.save()
+    // }, 5000)
     /* eslint-enable */
   },
 
   computed: {
-    linksNodes() {
+    linksNodes () {
       let result = []
       this.nodes.map((node) => {
         result.push({
           id: node.id,
           name: node.data.name,
           description: node.data.description,
-          resource: node.data.resource
+          resource: node.data.resource,
+          monsters: node.data.monsters
         })
       })
       return result
     }
   },
   methods: {
-    showCollapse(id) {
+    hasSelectedLink (linkId) {
+      if (Array.isArray(this.selectedNode.links) && this.selectedNode.links.length > 0) {
+        let selectedLinksIds = this.selectedNode.links.map((selectedLink) => {
+          return Number(selectedLink.toId)
+        })
+        return selectedLinksIds.indexOf(linkId) !== -1
+      }
+      return false
+    },
+    showCollapse (id) {
       document.getElementById(id).classList.toggle('show')
     },
-    getStrHash(s) {
+    getStrHash (s) {
       return s.split('').reduce(function (a, b) {
         a = ((a << 5) - a) + b.charCodeAt(0)
         return Math.abs(a & a)
@@ -363,7 +397,7 @@ export default {
      * Добавить ноду графа
      * @param data
      */
-    addNode(data = null) {
+    addNode (data = null) {
       if (data === null) {
         this.nodeTemplate.id++
         this.nodeTemplate.name = 'item ' + this.nodeTemplate.id
@@ -378,40 +412,56 @@ export default {
      * Добавить связь между нодами
      * @param event
      */
-    addLink(event) {
-      if (this.selectedNode.id !== event.target.value) {
+    addLink (event) {
+      if (event.target.value === '') {
+        let links = this.graph.getLinks(this.selectedNode.id)
+        links.forEach((link) => {
+          this.graph.removeLink(link)
+        })
+        this.selectedNode.links = []
+      } else if (
+        this.selectedNode.id !== event.target.value &&
+        this.graph.getLink(this.selectedNode.id, event.target.value) === null
+      ) {
         this.graph.addLink(this.selectedNode.id, event.target.value)
       }
     },
     /**
      * Обновить ноду
      */
-    updateNode() {
+    updateNode () {
       this.graph.addNode(this.selectedNode.id, this.selectedNode.data)
     },
     /**
      * Удалить ноду
      * @param nodeIndex
      */
-    removeNode(nodeIndex) {
+    removeNode (nodeIndex) {
       this.graph.removeNode(this.nodes[nodeIndex].id)
       this.nodes.splice(nodeIndex, 1)
     },
     /**
      * Сохранить граф в локальную память
      */
-    save() {
-      localStorage.setItem('nodes', JSON.stringify(this.nodes))
+    save () {
+      let saveObject = {
+        objects: this.objects,
+        monsters: this.monsters,
+        nodes: this.nodes
+      }
+      localStorage.setItem('nodes', JSON.stringify(saveObject))
     },
     /**
      * Загрузить сохраненные данные
      */
-    loadSaveNodes() {
-      let saveNodes = localStorage.getItem('nodes')
-      if (saveNodes) {
+    loadSaveNodes () {
+      let saveObjects = localStorage.getItem('nodes')
+      if (saveObjects) {
         try {
-          saveNodes = JSON.parse(saveNodes)
-          this.importNodes(saveNodes)
+          saveObjects = JSON.parse(saveObjects)
+          this.objects = (saveObjects.objects) ? saveObjects.objects : []
+          this.monsters = (saveObjects.monsters) ? saveObjects.monsters : []
+          this.importNodes(saveObjects.nodes)
         } catch (e) {
           console.error('Error load saved nodes', e)
         }
@@ -420,14 +470,14 @@ export default {
     /**
      * Очистить ноды
      */
-    clear() {
+    clear () {
       this.nodes = []
       this.graph.clear()
     },
     /**
      * Экспорт графа
      */
-    exportNodes() {
+    exportNodes () {
       const link = document.createElement('a')
       const file = new Blob([JSON.stringify(this.nodes)], {type: 'text/plain'})
       link.href = URL.createObjectURL(file)
@@ -439,21 +489,22 @@ export default {
      * Импорт нод графа
      * @param nodes
      */
-    importNodes(nodes) {
+    importNodes (nodes) {
       /**
        * add Nodes
        */
       nodes.map((item) => {
         this.addNode(item)
       })
-
       /**
        * add Links Nodes
        */
       nodes.map((item) => {
         if (item.links && Array.isArray(item.links)) {
           item.links.map((link) => {
-            this.graph.addLink(link.fromId, link.toId)
+            if (this.graph.getLink(link.fromId, link.toId) === null) {
+              this.graph.addLink(link.fromId, link.toId)
+            }
           })
         }
       })
@@ -462,7 +513,7 @@ export default {
      * Импорт файла
      * @param event
      */
-    importExportFile(event) {
+    importExportFile (event) {
       let file = event.target.files[0]
       let fr = new FileReader()
       fr.onload = () => {
@@ -481,7 +532,7 @@ export default {
      * Добавить монстра
      * @param data
      */
-    addMonster(data = null) {
+    addMonster (data = null) {
       if (data === null) {
         data = JSON.parse(JSON.stringify(this.monsterTemplate))
       }
@@ -491,7 +542,7 @@ export default {
      * Добавить предмет
      * @param data
      */
-    addObject(data = null) {
+    addObject (data = null) {
       if (data === null) {
         data = JSON.parse(JSON.stringify(this.objectTemplate))
       }
