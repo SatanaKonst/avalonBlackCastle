@@ -274,7 +274,7 @@
 
                 <br>
                 <br>
-                <qr-code size="128" :text="objects[objectIndex].key+':'+objects[objectIndex].name"></qr-code>
+                <qr-code :text="objects[objectIndex].key+':'+objects[objectIndex].name"></qr-code>
               </div>
             </div>
           </div>
@@ -439,7 +439,6 @@ export default {
     removeLink (linkId) {
       for (let selectedLinkIndex in this.selectedNode.links) {
         let selectedLink = this.selectedNode.links[selectedLinkIndex]
-        console.log(selectedLinkIndex)
         if (Number(selectedLink.toId) === linkId) {
           this.selectedNode.links.splice(selectedLinkIndex, 1)
           this.graph.removeLink(selectedLink)
@@ -500,13 +499,24 @@ export default {
     /**
      * Экспорт графа
      */
-    exportNodes () {
+    exportNodes: function () {
       const link = document.createElement('a')
       const file = new Blob([JSON.stringify(this.getSaveObject())], {type: 'text/plain'})
       link.href = URL.createObjectURL(file)
       link.download = 'graphNodes.txt'
       link.click()
       URL.revokeObjectURL(link.href)
+
+      // Выгружаем все qr коды
+      let qrCodes = document.querySelectorAll('#objectAccordion img')
+      if (qrCodes && qrCodes.length > 0) {
+        qrCodes.forEach((image) => {
+          let linkDownload = document.createElement('a')
+          linkDownload.download = image.closest('div').title
+          linkDownload.href = image.src
+          linkDownload.click()
+        })
+      }
     },
     /**
      * Импорт нод графа
