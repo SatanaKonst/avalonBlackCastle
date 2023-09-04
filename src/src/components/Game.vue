@@ -1,5 +1,5 @@
 <template>
-  <div class="container bg-primary mh-100 p-0 game-zone">
+  <div class="container bg-primary mh-100 game-zone">
     <div class="row game-header bg-danger">
       <div class="col-3">
         Cила
@@ -9,7 +9,8 @@
                :style="'width:' +(100/maxUserSettingsVariant * userSettings.strength)+'%'"
                :aria-valuenow="userSettings.strength"
                aria-valuemin="0"
-               :aria-valuemax="maxUserSettingsVariant">{{userSettings.strength}}</div>
+               :aria-valuemax="maxUserSettingsVariant">{{ userSettings.strength }}
+          </div>
         </div>
       </div>
       <div class="col-3">
@@ -20,7 +21,8 @@
                :style="'width:' +(100/maxUserSettingsVariant * userSettings.agility)+'%'"
                :aria-valuenow="userSettings.agility"
                aria-valuemin="0"
-               :aria-valuemax="maxUserSettingsVariant">{{userSettings.agility}}</div>
+               :aria-valuemax="maxUserSettingsVariant">{{ userSettings.agility }}
+          </div>
         </div>
       </div>
       <div class="col-3">
@@ -31,7 +33,8 @@
                :style="'width:' +(100/maxUserSettingsVariant * userSettings.charisma)+'%'"
                :aria-valuenow="userSettings.charisma"
                aria-valuemin="0"
-               :aria-valuemax="maxUserSettingsVariant">{{userSettings.charisma}}</div>
+               :aria-valuemax="maxUserSettingsVariant">{{ userSettings.charisma }}
+          </div>
         </div>
       </div>
       <div class="col-3 align-self-center">
@@ -53,63 +56,21 @@
           </label>
         </template>
         <template v-else-if="showInventar===true">
-          Инвентарь
+          <inventar-component :inventar="inventar"></inventar-component>
         </template>
         <template v-else>
-          <template v-if="currentLevel===null">
-            Ошибка получения стартового уровня
-          </template>
-          <template v-else>
-            <h1 class="text-center mb-2">{{ currentLevel.data.name }}</h1>
-            <p class="mb-2" v-if="currentLevel.data.description">
-              {{ currentLevel.data.description }}
-            </p>
-            <div class="row" v-for="(resource, resourceKey) in currentLevel.data.resource"
-                 :key="'resource'+resourceKey">
-              <template v-if="resourceKey==='images'">
-                <div class="col-12">
-                  <img v-for="(image, imageIndex) in resource" :key="'image'+imageIndex" :src="image"
-                       class="img-thumbnail rounded" alt="image">
-                </div>
-              </template>
-              <template v-if="resourceKey==='audio'">
-                <div class="col-12">
-                  <audio controls v-for="(audio, audioIndex) in resource" :key="'audio'+audioIndex">
-                    <source :src="audio">
-                    Your browser does not support the audio element.
-                  </audio>
-                </div>
-              </template>
-              <template v-if="resourceKey==='video'">
-                <div class="col-12">
-                  Тут блоки с видео
-                </div>
-              </template>
-            </div>
-          </template>
+          <play-component v-if="currentLevel!==null" :currentLevel="currentLevel" :levels="levels"></play-component>
         </template>
       </div>
     </div>
 
-    <div class="row game-footer bg-success">
-      <div class="col-12 pt-2 pb-2 text-center" v-if="showInventar===false">
-        <template v-if="currentLevel!==null && currentLevel.links">
-          <h3>Следующая локация</h3>
-          <button class="btn btn-sm btn-info m-1"
-                  v-for="(level, levelIndex) in currentLevel.links"
-                  v-if="Number(level.toId)!==Number(currentLevel.id)"
-                  :key="'level'+levelIndex"
-                  @click="selectNextLevel(level.toId)"
-          >
-            {{ getNextLevelName(level.toId) }}
-          </button>
-        </template>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import Inventar from './components/Inventar.vue'
+import play from './components/Play.vue'
+
 export default ({
   name: 'Game',
   data () {
@@ -128,13 +89,17 @@ export default ({
       inventar: []
     }
   },
+  components: {
+    inventarComponent: Inventar,
+    playComponent: play
+  },
   mounted () {
-    let link = document.createElement("link");
-    link.href = "/static/fontawesome-6.4.0/css/all.css";
-    link.type = "text/css";
-    link.rel = "stylesheet";
+    let link = document.createElement('link')
+    link.href = '/static/fontawesome-6.4.0/css/all.css'
+    link.type = 'text/css'
+    link.rel = 'stylesheet'
 
-    document.getElementsByTagName("head")[0].appendChild(link);
+    document.getElementsByTagName('head')[0].appendChild(link)
 
     this.userSettings = this.getStartUserSettings(this.maxUserSettingsVariant)
   },
@@ -168,47 +133,12 @@ export default ({
       }
 
       fr.readAsText(file)
-    },
-    getNextLevelName (levelId) {
-      for (let levelIndex in this.levels) {
-        let level = this.levels[levelIndex]
-        if (Number(level.id) === Number(levelId)) {
-          return level.data.name
-        }
-      }
-    },
-    selectNextLevel (levelId) {
-      for (let levelIndex in this.levels) {
-        let level = this.levels[levelIndex]
-        if (Number(level.id) === Number(levelId)) {
-          this.currentLevel = level
-        }
-      }
     }
+
   }
 })
 </script>
 
 <style scoped>
-.game-zone {
-  height: 100vh;
-}
 
-.game-header {
-  height: 10vh;
-}
-
-.game-content {
-  height: 60vh;
-  overflow-y: auto;
-}
-
-.game-content .img-thumbnail {
-  height: 150px;
-}
-
-.game-footer {
-  height: 30vh;
-  overflow-y: auto;
-}
 </style>
