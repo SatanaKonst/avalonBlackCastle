@@ -56,10 +56,14 @@
           </label>
         </template>
         <template v-else-if="showInventar===true">
-          <inventar-component :inventar="inventar"></inventar-component>
+          <inventar-component :inventar="inventar"
+                              :objects="objects"
+                              @useInventarObject="useInventarObject($event)"></inventar-component>
         </template>
         <template v-else>
-          <play-component v-if="currentLevel!==null" :currentLevel="currentLevel" :levels="levels"></play-component>
+          <play-component v-if="currentLevel!==null"
+                          :currentLevel="currentLevel"
+                          :levels="levels"></play-component>
         </template>
       </div>
     </div>
@@ -133,8 +137,11 @@ export default ({
       }
 
       fr.readAsText(file)
+    },
+    useInventarObject (inventarObject) {
+      console.log(inventarObject)
+      // TODO::Описать использование предмета из инвентаря
     }
-
   }
 })
 </script>

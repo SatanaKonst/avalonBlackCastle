@@ -324,7 +324,9 @@ export default {
       objectTemplate: {
         key: this.getStrHash('Название предмета'),
         name: 'Название предмета',
-        description: ''
+        description: '',
+        icon: null,
+        value: null
       },
       selectedNode: null
     }
@@ -580,9 +582,6 @@ export default {
         data = JSON.parse(JSON.stringify(this.objectTemplate))
       }
       this.objects.push(data)
-
-      // Добавить генерирование QR кодов
-      // https://www.npmjs.com/package/qrcode
     }
 
   }
