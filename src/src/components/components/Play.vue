@@ -52,7 +52,7 @@ export default ({
     levels: Array
   },
   methods: {
-    selectNextLevel(levelId) {
+    selectNextLevel (levelId) {
       for (let levelIndex in this.$props.levels) {
         let level = this.$props.levels[levelIndex]
         if (Number(level.id) === Number(levelId)) {
@@ -60,7 +60,7 @@ export default ({
         }
       }
     },
-    getNextLevelName(levelId) {
+    getNextLevelName (levelId) {
       for (let levelIndex in this.$props.levels) {
         let level = this.$props.levels[levelIndex]
         if (Number(level.id) === Number(levelId)) {

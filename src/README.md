@@ -29,3 +29,8 @@ npm test
 
 
 ## Запуск Apache Cordova смотри в README в корне
+
+## Зависимости ##
+1. https://github.com/gerardreches/vue-qrcode-component
+2. https://github.com/nimiq/qr-scanner
+

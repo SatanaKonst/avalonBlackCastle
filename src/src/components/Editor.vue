@@ -271,6 +271,10 @@
                   Описание
                   <textarea class="form-control" v-model="objects[objectIndex].description"></textarea>
                 </label>
+
+                <br>
+                <br>
+                <qr-code size="128" :text="objects[objectIndex].key+':'+objects[objectIndex].name"></qr-code>
               </div>
             </div>
           </div>
@@ -566,6 +570,9 @@ export default {
         data = JSON.parse(JSON.stringify(this.objectTemplate))
       }
       this.objects.push(data)
+
+      // Добавить генерирование QR кодов
+      // https://www.npmjs.com/package/qrcode
     }
 
   }

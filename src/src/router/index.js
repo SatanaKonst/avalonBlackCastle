@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import Index from '@/components/Index.vue'
 import Editor from '@/components/Editor.vue'
 import Game from '@/components/Game.vue'
+import VueQRCodeComponent from 'vue-qrcode-component'
+Vue.component('qr-code', VueQRCodeComponent)
 
 Vue.use(Router)
 
